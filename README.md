@@ -77,4 +77,25 @@ source ~/.pyvenv/bin/activate
 To validate the environment is up:
 
 ```sh
+# export KUBECONFIG=~/.kube/ovn.conf - if not already set...
+kubectl run test-pod --image=busybox --restart=Never --command -- sleep 3600
+kubectl run test-pod-2 --image=busybox --restart=Never --command -- sleep 3600
+POD2="$(kubectl get pod test-pod --template '{{.status.podIP}}')"
+kubectl exec -it test-pod -- ping $POD2
+```
+## Create UDNs
+
+TBD
+
+## Deploy Ambient
+
+TBD
+
+## Shutdown
+
+```sh
+# from ovn-kubernetes/ovn-kubernetes Git directory:
+pushd contrib
+./kind.sh --delete
+popd
 ```
