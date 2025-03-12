@@ -62,8 +62,8 @@ popd
 > As part of the bring up process, `contrib/kind.sh` attempts to install
  the `Jinja2` and `jinjanate` Python modules. This could error on newer
  distributions (especially recent Ubuntu's), with an error message:
- `error: externally-managed-environment ... See PEP 668 for the detailed specification`
- You can workaround it by manually installing the packages before script
+ `error: externally-managed-environment ... See PEP 668 for the detailed specification`.
+> You can workaround it by manually installing the packages before script
  invocation, adding `--break-system-packages` to the `pip` command line.
  A safer alternative is to use Python virtual environments:
  ```sh
