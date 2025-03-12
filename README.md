@@ -59,21 +59,6 @@ export KUBECONFIG=${HOME}/.kube/ovn.conf
 popd
 ```
 
-> As part of the bring up process, `contrib/kind.sh` attempts to install
- the `Jinja2` and `jinjanate` Python modules. This could error on newer
- distributions (especially recent Ubuntu's), with an error message:
- `error: externally-managed-environment ... See PEP 668 for the detailed specification`.
-> You can workaround it by manually installing the packages before script
- invocation, adding `--break-system-packages` to the `pip` command line.
- A safer alternative is to use Python virtual environments:
- ```sh
-python -m venv ~/.pyvenv
-source ~/.pyvenv/bin/activate
-# or, if you wish to make this permanent:
-# echo "export VIRTUAL_ENV_DISABLE_PROMPT=true" >> ~/.bashrc
-# echo "source $HOME/.pyvenv/bin/activate" >> ~/.bashrc
-```
-
 To validate the environment is up:
 
 ```sh
@@ -83,6 +68,26 @@ kubectl run test-pod-2 --image=busybox --restart=Never --command -- sleep 3600
 POD2="$(kubectl get pod test-pod --template '{{.status.podIP}}')"
 kubectl exec -it test-pod -- ping $POD2
 ```
+
+#### Error: Externally managed Python environment
+
+As part of the bring up process, `contrib/kind.sh` attempts to install
+ the `Jinja2` and `jinjanate` Python modules. This could error on newer
+ distributions (especially recent Ubuntu's), with an error message:
+ `error: externally-managed-environment ... See PEP 668 for the detailed specification`.
+
+You can workaround it by manually installing the packages before script
+ invocation, adding `--break-system-packages` to the `pip` command line.
+ A safer alternative is to use Python virtual environments:
+
+```sh
+python -m venv ~/.pyvenv
+source ~/.pyvenv/bin/activate
+# or, if you wish to make this permanent:
+# echo "export VIRTUAL_ENV_DISABLE_PROMPT=true" >> ~/.bashrc
+# echo "source $HOME/.pyvenv/bin/activate" >> ~/.bashrc
+```
+
 ## Create UDNs
 
 TBD
