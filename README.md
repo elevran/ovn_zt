@@ -2,6 +2,12 @@
 
 Enable Istio Ambient to run on specific ovn-k8s UDNs
 
+## Caveats
+
+- This does not work on WSL(2) due to missing `openvswitch` kernel module
+ and module loading. So you're better off not wasting time and doing
+ development on a physical (or virtual) machine.
+
 ## Prerequisites
 
 ### Requitred tool instllation
@@ -20,55 +26,55 @@ Ensure you have the following installed on your system:
     chmod +x kubectl
     sudo mv kubectl /usr/local/bin/
     ```
-1. Install CNI Plugins (optional, but recommended):
-    ```sh
-    sudo mkdir -p /opt/cni/bin
-    curl -L -o /tmp/cni-plugins.tgz https://github.com/containernetworking/plugins/releases/latest/download/cni-plugins-linux-amd64.tgz
-    sudo tar -C /opt/cni/bin -xzf /tmp/cni-plugins.tgz
-    ```
-    > if downloads fails (or tar complains about not finding a zip format), it's likely
-    that `latest` release is not correctly configured on github and you should download
-    a specific release number (e.g., `v1.6.2` at the time of writing) instead of `latest`.
+1. Miscellaneous tools that are used during the build, such as `python3`, 
+   `pip`, and `jq` are often preinstalled.  
 
 ### Cluster creation with ovn-k8s CNI
 
-1. Create a `kind-config.yaml` file with the following content to create a 2 worker
- cluster, disabling the default CNI (we'll install ovn-k8s afterwards):
-    ```yaml
-    kind: Cluster
-    apiVersion: kind.x-k8s.io/v1alpha4
-    name: ovn-zt
-    networking:
-    disableDefaultCNI: true
-    kubeProxyMode: "none"
-    nodes:
-    - role: control-plane
-    - role: worker
-    - role: worker
-    ```
-1. Run `kind` to create the cluster:
-    ```sh
-    kind create cluster --config kind-config.yaml
-    Creating cluster "ovn-zt" ...
-    ✓ Ensuring node image (kindest/node:v1.32.2) 🖼
-    ✓ Preparing nodes 📦 📦 📦
-    ✓ Writing configuration 📜
-    ✓ Starting control-plane 🕹️
-    ✓ Installing StorageClass 💾
-    ✓ Joining worker nodes 🚜
-    Set kubectl context to "kind-ovn-zt"
-    You can now use your cluster with:
+Install the [ovn-kubernetes in kind](https://ovn-kubernetes.io/installation/launching-ovn-kubernetes-on-kind/) development environment.
+You mush enable `-mne` and `-nse` (short for `--multi-network-enable` and
+`--network-segmentation-enable`, respectively) when running the
+`contrib/kind.sh` command. The below is a shortcut of the steps - refer
+to the original document linked above.
 
-    kubectl cluster-info --context kind-ovn-zt
+```sh
+git clone github.com/ovn-kubernetes/ovn-kubernetes; 
+cd ovn-kubernetes
+# validate local changes, if any
+pushd go-controller
+make
+popd
+# build container image
+pushd dist/images
+make ubuntu-image
+popd
+# bring up development environment
+pushd contrib
+export KUBECONFIG=${HOME}/.kube/ovn.conf
+./kind.sh -mne -nse
+# or: KUBECONFIG=${HOME}/.kube/ovn.conf ./kind.sh -mne -nse
+# if you built the image before, add -ov ovn-kube-ubuntu
+# you may also use --deploy for tighter feedback loops when making
+# ovn-k8s changes
+popd
+```
 
-    Have a nice day! 👋
-    ```
-1. Verify the cluster is up and running:
-    ```sh
-    kubectl get nodes
-    NAME                   STATUS     ROLES           AGE     VERSION
-    ovn-zt-control-plane   NotReady   control-plane   10m     v1.32.2
-    ovn-zt-worker          NotReady   <none>          9m58s   v1.32.2
-    ovn-zt-worker2         NotReady   <none>          9m58s   v1.32.2
-    ```
-1. Install [ovn-kubernetes in kind](https://ovn-kubernetes.io/installation/launching-ovn-kubernetes-on-kind/)
+> As part of the bring up process, `contrib/kind.sh` attempts to install
+ the `Jinja2` and `jinjanate` Python modules. This could error on newer
+ distributions (especially recent Ubuntu's), with an error message: `error:
+ externally-managed-environment ... See PEP 668 for the detailed specification`
+ You can workaround it by manually installing the packages before script
+ invocation, adding `--break-system-packages` to the `pip` command line.
+ A safer alternative is to use Python virtual environments:
+ ```sh
+python -m venv ~/.pyvenv
+source ~/.pyvenv/bin/activate
+# or, if you wish to make this permanent:
+# echo "export VIRTUAL_ENV_DISABLE_PROMPT=true" >> ~/.bashrc
+# echo "source $HOME/.pyvenv/bin/activate" >> ~/.bashrc
+```
+
+To validate the environment is up:
+
+```sh
+```
