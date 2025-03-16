@@ -32,10 +32,12 @@ Ensure you have the following installed on your system:
 ### Cluster creation with ovn-k8s CNI
 
 Install the [ovn-kubernetes in kind](https://ovn-kubernetes.io/installation/launching-ovn-kubernetes-on-kind/) development environment.
-You mush enable `-mne` and `-nse` (short for `--multi-network-enable` and
-`--network-segmentation-enable`, respectively) when running the
-`contrib/kind.sh` command. The below is a shortcut of the steps - refer
-to the original document linked above.
+ You mush enable `-mne` and `-nse` (short for `--multi-network-enable` and
+ `--network-segmentation-enable`, respectively) when running the
+ `contrib/kind.sh` command. Additionally, it is recommended to run with `-ic`
+ and `-ds` flags (`--enable-interconnect` and `--disable-snat-multiple-gws`)
+ to match downstream OpenShift configuration. The description below is a
+ shortcut of the steps - refer to the original document linked above.
 
 ```sh
 git clone github.com/ovn-kubernetes/ovn-kubernetes; 
@@ -51,11 +53,11 @@ popd
 # bring up development environment
 pushd contrib
 export KUBECONFIG=${HOME}/.kube/ovn.conf
-./kind.sh -mne -nse
-# or: KUBECONFIG=${HOME}/.kube/ovn.conf ./kind.sh -mne -nse
+./kind.sh -mne -nse -ic -ds
+# or: KUBECONFIG=${HOME}/.kube/ovn.conf ./kind.sh -mne -nse -ic -ds
 # if you built the image before, add -ov ovn-kube-ubuntu
 # you may also use --deploy for tighter feedback loops when making
-# ovn-k8s changes
+# ovn-k8s changes.
 popd
 ```
 
